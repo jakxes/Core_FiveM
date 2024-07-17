@@ -23,6 +23,7 @@ namespace Core_FiveM  {
             API.RegisterKeyMapping("+mfs", "Move forward", "keyboard", "c");
             API.RegisterKeyMapping("+rgvr", "roll left", "keyboard", "j");
             API.RegisterKeyMapping("+rgvl", "roll right", "keyboard", "k");
+            API.RegisterKeyMapping("+superspeed", "Super Speed", "keyboard", "u");
             
             // COMMAND REGISTRY
             
@@ -93,6 +94,15 @@ namespace Core_FiveM  {
                 change_model(args[0].ToString());
             }), false);
             
+            // Super Speed
+            API.RegisterCommand("+superspeed", new Action<int, List<object>, string>(async (src, args, raw) => {
+                            superspeed = true;
+            }), false);
+            API.RegisterCommand("-superspeed", new Action<int, List<object>, string>(async (src, args, raw) => {
+                superspeed = false;
+            }), false);
+            
+            
             
             // Rocket League Movement
             API.RegisterCommand("+rgvr", new Action<int, List<object>, string>(async (src, args, raw) => {
@@ -141,7 +151,7 @@ namespace Core_FiveM  {
                         Game.PlayerPed.CurrentVehicle.EnginePowerMultiplier = 50;
                     }
                 
-                    if (Game.PlayerPed.CurrentVehicle.IsInWater && !Game.PlayerPed.CurrentVehicle.Model.IsBoat) {
+                    if (Game.PlayerPed.CurrentVehicle.IsInWater && (!Game.PlayerPed.CurrentVehicle.Model.IsBoat)) {
                         Game.PlayerPed.CurrentVehicle.Velocity += new Vector3(0, 0f, 6f) + Game.PlayerPed.CurrentVehicle.ForwardVector * 6;
                         Game.PlayerPed.CurrentVehicle.Repair();
                     }
@@ -155,6 +165,9 @@ namespace Core_FiveM  {
                 
                     if(boost == true)
                         Game.PlayerPed.CurrentVehicle.Speed = 50f;
+                    
+                    if(superspeed == true)
+                        Game.PlayerPed.CurrentVehicle.Speed = 500f;
 
                     
                 }
@@ -164,16 +177,23 @@ namespace Core_FiveM  {
                 
                 if (wanted_type == false) 
                     Game.Player.WantedLevel = 0;
-                
-               
-               
+
+                int hours = (int) Math.Floor((double) (Game.GameTime / (1000 * 60 * 60))); 
+                int min = (Game.GameTime / (1000 * 60))%60;
+                int seconds = (Game.GameTime / 1000) % 60;
+                string gametime = "";
+                if (min > 0)
+                {
+                    if (hours > 0) gametime = hours + "h " + min + "min " + seconds + "s";
+                    else gametime = min + "min " + seconds + "s";
+                } else gametime = seconds + "s";
                 API.SetTextFont(4);  
                 API.SetTextScale(0.5f, 0.5f);  
                 API.SetTextColour(0, 255, 0, 255);
                 API.SetTextEntry("TWOSTRINGS");
                 string vehicle = Game.PlayerPed.IsInVehicle() ? Game.PlayerPed.CurrentVehicle.DisplayName : "null";
                 API.AddTextComponentString($"Invincibility » {Game.Player.IsInvincible}\nAble to fall? » {able_to_fall}\nFast driving » {fast_drive}\n"); 
-                API.AddTextComponentString2($"Can be wanted? » {wanted_type}\nCurrent Vehicle » {vehicle}\nGametime » {Game.GameTime/(1000*60)}min");
+                API.AddTextComponentString2($"Can be wanted? » {wanted_type}\nCurrent Vehicle » {vehicle}\nGametime » {gametime}");
                 
                 API.DrawText(0f, 0.62f);
                 
@@ -278,7 +298,8 @@ namespace Core_FiveM  {
         bool rgvr = false;
         bool rgvl = false;
         bool boost = false;
-        
+        bool superspeed = false;
+
     }
 
 }
